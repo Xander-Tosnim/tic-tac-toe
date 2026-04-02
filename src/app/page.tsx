@@ -1,6 +1,6 @@
 'use client'
 
-import { Circle, PersonStanding, User, Users, X } from "lucide-react";
+import { Circle, User, Users, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export default function Home() {
@@ -8,10 +8,14 @@ export default function Home() {
   type Player = "X" | "O" | null;
 
   const [board, setBoard] = useState<Player[]>(Array(9).fill(null));
-  const [gameMode, setGameMode] = useState<"single" | "multi" | null>(null);
+  const [gameMode, setGameMode] = useState<"single" | "double" | null>(null);
   const [player, setPlayer] = useState<Player>(null);
   const [isXTurn, setIsXTurn] = useState<boolean>(true);
   const [scores, setScores] = useState({ X: 0, O: 0 });
+
+  const isComputerTurn: boolean = (gameMode === "single" && ((player === "X" && !isXTurn) || (player === "O" && isXTurn)));
+
+  console.log(isComputerTurn);
 
   const toWinCombination: number[][] = [
     // for horizontal
@@ -108,7 +112,7 @@ export default function Home() {
               <button
                 className="flex flex-col items-center justify-center border rounded-2xl w-full m-2 cursor-pointer hover:bg-gray-50 hover:text-gray-800 transition-colors duration-200"
                 onClick={() => {
-                  setGameMode("multi")
+                  setGameMode("double")
                   setPlayer("X")
                 }}
               >
