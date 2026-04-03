@@ -78,6 +78,25 @@ export default function Home() {
     return `Turn For Player: ${isXTurn ? "X" : "O"}`;
   }
 
+  const computerMove = () => {
+    const emptySquares: number[] = [];
+
+    board.forEach((square, index) => {
+      if (square === null) emptySquares.push(index);
+    });
+
+    if(emptySquares.length > 0) {
+      const randomIndex = emptySquares[Math.floor(Math.random() * emptySquares.length)];
+      handleSquareClick(randomIndex);
+    }
+    
+    console.log(emptySquares);
+  }
+
+  if(isComputerTurn) { 
+    setTimeout(() => computerMove(), 800)
+  };
+
   useEffect(() => {
     const winner = getWinner(board);
     const draw = board.every((square) => square !== null);
@@ -172,8 +191,8 @@ export default function Home() {
               {board.map((square, index) => (
                 <button
                   key={index}
-                  onClick={() => handleSquareClick(index)}
-                  className={`h-32 w-full bg-gray-800 rounded-md text-6xl font-light transition-colors duration-200 hover:bg-gray-700 ${square === "X" ? "text-white" : "text-slate-400"}`}
+                  onClick={() => isComputerTurn ? null : handleSquareClick(index)}
+                  className={`h-32 w-full bg-gray-800 rounded-md text-6xl font-light transition-colors duration-200 ${isComputerTurn ? "" : "hover:bg-gray-700 cursor-pointer"} ${square === "X" ? "text-white" : "text-slate-400"}`}
                 >
                   {square}
                 </button>
