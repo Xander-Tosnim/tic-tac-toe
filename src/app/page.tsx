@@ -13,9 +13,8 @@ export default function Home() {
   const [isXTurn, setIsXTurn] = useState<boolean>(true);
   const [scores, setScores] = useState({ X: 0, O: 0 });
 
+  const computerSymbol: Player = player === "X" ? "O" : player === "O" ? "X" : null;
   const isComputerTurn: boolean = (gameMode === "single" && ((player === "X" && !isXTurn) || (player === "O" && isXTurn)));
-
-  console.log(isComputerTurn);
 
   const toWinCombination: number[][] = [
     // for horizontal
@@ -43,6 +42,48 @@ export default function Home() {
     }
 
     return null;
+  }
+
+  // MINIMAX algorithm for nearly unbeatable CPU turns
+  const minimax = (squares: Player[], isMaximizing: boolean): number => {
+    const winner = getWinner(squares);
+
+    if (winner === computerSymbol) return 10;
+    if (winner === player) return -10;
+    if (squares.every(square => square !== null)) return 0;
+
+    let bestScore = isMaximizing ? -Infinity : Infinity;
+
+    squares.forEach((square, i) => {
+      if (square) return;
+      squares[i] = isMaximizing ? computerSymbol : player;
+      const score = minimax(squares, !isMaximizing);
+      squares[i] = null;
+      bestScore = isMaximizing ? Math.max(bestScore, score) : Math.min(bestScore, score);
+    });
+
+    return bestScore;
+  }
+
+  const computerMove = () => {
+    let bestScore = -Infinity;
+    let bestMove = -1;
+
+    board.forEach((square, i) => {
+      if (square) return;
+
+      const newBoard = [...board];
+      newBoard[i] = computerSymbol;
+
+      const score = minimax(newBoard, false);
+      if (score > bestScore) {
+        bestScore = score;
+        bestMove = i;
+      }
+    });
+
+    if (bestMove !== -1) handleSquareClick(bestMove)
+
   }
 
   const handleSquareClick = (i: number): void => {
@@ -78,24 +119,6 @@ export default function Home() {
     return `Turn For Player: ${isXTurn ? "X" : "O"}`;
   }
 
-  const computerMove = () => {
-    const emptySquares: number[] = [];
-
-    board.forEach((square, index) => {
-      if (square === null) emptySquares.push(index);
-    });
-
-    if(emptySquares.length > 0) {
-      const randomIndex = emptySquares[Math.floor(Math.random() * emptySquares.length)];
-      handleSquareClick(randomIndex);
-    }
-    
-    console.log(emptySquares);
-  }
-
-  if(isComputerTurn) { 
-    setTimeout(() => computerMove(), 800)
-  };
 
   useEffect(() => {
     const winner = getWinner(board);
@@ -104,9 +127,18 @@ export default function Home() {
     if (winner === "X") setScores(prev => ({ ...prev, X: prev.X + 1 }));
     if (winner === "O") setScores(prev => ({ ...prev, O: prev.O + 1 }));
 
-    if (winner || draw) setTimeout(() => resetGame(), 2000);
+    if (winner || draw) {
+      const timer = setTimeout(() => resetGame(), 2000);
+      return () => clearTimeout(timer)
+    };
 
   }, [board]);
+
+  useEffect(() => {
+    if (!isComputerTurn) return;
+    const timer = setTimeout(() => computerMove(), 800);
+    return () => clearTimeout(timer);
+  }, [isComputerTurn, board]);
 
   return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center">
